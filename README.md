@@ -33,7 +33,7 @@ git remote add private https://github.com/<your-username>/cnice-github-downstrea
 - (optional but recommanded) delete `main` branch `git branch -D main`
 - at `private` branch, get up-to-date with the main branch `git pull origin main`
 - you should now make changes **ONLY** on your `private` branch
-- push all your commits to your own private repo `git push private main`
+- push all your commits to `main` branch of your `private` repo `git push private private:main`
 
 ### Before pushing to `origin main`
 
