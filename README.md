@@ -33,8 +33,9 @@ git remote add private https://github.com/<your-username>/cnice-github-downstrea
 4. before pushing to `origin main`
 
 - at your `private` branch, get up-to-date with the public main by `git pull origin main`
+- resolve conflicts after `git pull` and make a new commit
 - at your `private` branch, create a new branch called `pre-release`
-- if you already have `pre-release`, `git merge private` at `pre-release`
+  - if you already have `pre-release`, `git merge private` at `pre-release`
 - at `pre-release` delete everything that's not supposed to be public
 - create a new commit at `pre-release` with msg starting with **"release to main:"**
 
