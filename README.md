@@ -23,7 +23,7 @@ You can only contribute to this repo if you are one of the collaborators. Becaus
 
 ```bash
 git remote add origin https://github.com/FIT-CNICE/.github.git
-git remote add private https://github.com/<your-username>/fit-github-downstream.git
+git remote add private https://github.com/<your-username>/cnice-github-downstream.git
 ```
 
 - at `private` branch, get up-to-date with the main branch `git pull origin main`
@@ -43,5 +43,7 @@ git remote add private https://github.com/<your-username>/fit-github-downstream.
 The public main branch is protected, and you can only create pull request to it. At `pre-release`, 
 
 ```bash 
-git push origin main
+gh pr create -a "@fit-sizhe" --title "release to main: description of ur pr"
 ```
+
+Because you have set up 2 remote repositories, the command above will ask you to choose one of them to push. You can skip adding message body.
