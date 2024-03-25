@@ -994,7 +994,8 @@ function reduceDict(...args: any[]): any {}
 ```
 
 <details><summary markdown="span">try the challenge before see the solution here!</summary>
-```ts
+
+```typescript
 // Array.prototype.map, but for Dict
 function mapDict<T, S>(
   inputDict: Dict<T>,
