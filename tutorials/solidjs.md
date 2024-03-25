@@ -38,25 +38,45 @@ _A crash course on SolidJS_<!--more-->
 SolidJS uses:
 
 - `createSignal`: Fine-grained signals that hold a value and represent that value overtime
-<iframe
-  src="https://carbon.now.sh/embed?bg=rgba%28173%2C208%2C248%2C0%29&t=cobalt&wt=none&l=javascript&width=680&ds=true&dsyoff=20px&dsblur=68px&wc=true&wa=true&pv=56px&ph=56px&ln=false&fl=1&fm=Hack&fs=14px&lh=133%25&si=false&es=2x&wm=false&code=const%2520%255Bcount%252C%2520setCount%255D%2520%253D%2520createSignal%280%29%253B%250Aconsole.log%28count%28%29%29%2520%252F%252F0%250A%250AsetCount%285%29%250Aconsole.log%28count%28%29%29%2520%252F%252F5"
-  style="width: 504px; height: 279px; border:0; transform: scale(1); overflow:hidden;"
-  sandbox="allow-scripts allow-same-origin">
-</iframe>
+
+```javascript
+const [count, setCount] = createSignal(0);
+console.log(count()) //0
+
+setCount(5)
+console.log(count()) //5
+```
 
 - `createEffect`: All reactive variables(signals) are function calls, and might be wrapped in effect functions; the wrapping function reruns everytime reacitive variables change
-<iframe
-  src="https://carbon.now.sh/embed?bg=rgba%28173%2C208%2C248%2C0%29&t=cobalt&wt=none&l=javascript&width=680&ds=true&dsyoff=20px&dsblur=68px&wc=true&wa=true&pv=56px&ph=56px&ln=false&fl=1&fm=Hack&fs=14px&lh=133%25&si=false&es=2x&wm=false&code=const%2520%255Bcount%252C%2520setCount%255D%2520%253D%2520createSignal%280%29%253B%250A%250AcreateEffect%28%28%29%253D%253E%257B%250A%2520%2520console.log%28%2522the%2520count%2520is%2522%252C%2520count%28%29%29%253B%250A%257D%29%253B%250A%252F%252F%2520print%253A%2520the%2520count%2520is%25200%250A%250AsetCount%285%29%250A%252F%252F%2520print%2520again%253A%2520the%2520count%2520is%25205"
-  style="width: 504px; height: 354px; border:0; transform: scale(1); overflow:hidden;"
-  sandbox="allow-scripts allow-same-origin">
-</iframe>
+
+```javascript 
+const [count, setCount] = createSignal(0);
+
+createEffect(()=>{
+  console.log("the count is", count());
+});
+// print: the count is 0
+
+setCount(5)
+// print again: the count is 5
+```
 
 - `createMemo`: Derived variables(Memos) are composed of signals, and are re-calculated when dependent signals change
-<iframe
-  src="https://carbon.now.sh/embed?bg=rgba%28173%2C208%2C248%2C0%29&t=cobalt&wt=none&l=javascript&width=680&ds=true&dsyoff=20px&dsblur=68px&wc=true&wa=true&pv=56px&ph=56px&ln=false&fl=1&fm=Hack&fs=14px&lh=133%25&si=false&es=2x&wm=false&code=const%2520%255Bfirst%252C%2520setFirst%255D%2520%253D%2520createSignal%28%2522john%2522%29%253B%250Aconst%2520%255BLast%252C%2520setLast%255D%2520%253D%2520createSignal%28%2522smith%2522%29%253B%250Aconst%2520fullName%2520%253D%2520createMemo%28%28%29%253D%253E%2560%2524%257Bfirst%257D%2520%2524%257Blast%257D%2560%29%253B%250A%250AcreateEffect%28%28%29%253D%253E%257B%250A%2520%2520console.log%28%2522my%2520name%2520is%2522%252C%2520fullName%28%29%29%253B%250A%257D%29%253B%250A%252F%252F%2520print%253A%2520my%2520name%2520is%2520john%2520smith%250A%250AsetFirst%28%2522will%2522%29%253B%250A%252F%252F%2520print%2520again%253A%2520my%2520name%2520is%2520will%2520smith"
-  style="width: 589px; height: 391px; border:0; transform: scale(1); overflow:hidden;"
-  sandbox="allow-scripts allow-same-origin">
-</iframe>
+
+
+```javascript 
+const [first, setFirst] = createSignal("john");
+const [Last, setLast] = createSignal("smith");
+const fullName = createMemo(()=>`${first} ${last}`);
+
+createEffect(()=>{
+  console.log("my name is", fullName());
+});
+// print: my name is john smith
+
+setFirst("will");
+// print again: my name is will smith
+```
 
 - `untrack(fn)/batch(fn)`: prevent reactive tracking within the scope of `fn` function/ waits to apply changes until `fn` completes
 
