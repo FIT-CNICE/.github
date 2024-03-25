@@ -993,8 +993,6 @@ function filterDict(...args: any[]): any {}
 function reduceDict(...args: any[]): any {}
 ```
 
-{::options parse_block_html="true" /}
-
 <details><summary markdown="span">try the challenge before see the solution here!</summary>
 ```ts
 // Array.prototype.map, but for Dict
@@ -1041,8 +1039,6 @@ function reduceDict<T, S>(
 ```
 </details>
 <br/>
-
-{::options parse_block_html="false" /}
 
 ### Generic constraints: “minimum requirement” for a type param
 
