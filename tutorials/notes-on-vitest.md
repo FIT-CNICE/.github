@@ -1,4 +1,4 @@
-# Testing Fundamentals: Vitest
+# Testing Fundamentals
 
 _"Effortless as the wind that whispers by, when upon my bike I ride and fly."_<!--more-->
 
@@ -26,7 +26,18 @@ _"Effortless as the wind that whispers by, when upon my bike I ride and fly."_<!
   * [integration tests (functional)](#integration-tests-functional)
   * [system tests (e2e)](#system-tests-e2e)
   * [acceptance tests: mimic real user behavior](#acceptance-tests-mimic-real-user-behavior)
-* [Example: unit test](#example-unit-test)
+* [Unit test with Vitest](#unit-test-with-vitest)
+  * [Common commands with Vitest](#common-commands-with-vitest)
+  * [`it` and `test`](#it-and-test)
+  * [Equality](#equality)
+  * [Throw Error?](#throw-error)
+  * [Skip tests](#skip-tests)
+  * [Compare tests btw commits: `vitest --changed`](#compare-tests-btw-commits-vitest---changed)
+  * [Test suites: `describe`](#test-suites-describe)
+  * [Test Asynchronous code](#test-asynchronous-code)
+  * [Asymmetric matcher](#asymmetric-matcher)
+  * [Parameterizing tests: `it.each` or `describe.each`](#parameterizing-tests-iteach-or-describeeach)
+  * [Concurrent tests](#concurrent-tests)
 
 <!-- mtoc-end -->
 
@@ -239,7 +250,7 @@ if (__MY_CONDITION__ === 'some value') {
 
 While Vite doesn’t offer built-in direct support for conditional imports in import statements, there’s a third-party plugin called [ vite-plugin-dynamic-import ](https://www.npmjs.com/package/vite-plugin-dynamic-import) that provides such a feature.
 
-```javascript 
+```javascript
 //vite.config.js
 import { defineConfig } from 'vite'
 import dynamicImport from 'vite-plugin-dynamic-import';
@@ -247,35 +258,35 @@ import dynamicImport from 'vite-plugin-dynamic-import';
 export default defineConfig {
 	plugins: [dynamicImport()]
 };
-// in other js/ts file 
+// in other js/ts file
 import(`./content/${variable}.js`);
 ```
 
 ### `import.meta.glob`
 
-Vite includes support for importing multiple modules at the same time `import.meta.glob`. For example, you should see **something where the keys are the file names and the values are promises that are just import statements** by running 
+Vite includes support for importing multiple modules at the same time `import.meta.glob`. For example, you should see **something where the keys are the file names and the values are promises that are just import statements** by running
 
-```javascript 
-console.log(import.meta.glob('./logos/**/*.svg'));
+```javascript
+console.log(import.meta.glob("./logos/**/*.svg"));
 ```
 
 This means, we could do smt like:
 
-```javascript 
-const content = document.querySelector('#content');
+```javascript
+const content = document.querySelector("#content");
 
 export default function logos() {
-	const modules = import.meta.glob('./logos/**/*.svg');
+  const modules = import.meta.glob("./logos/**/*.svg");
 
-	for (const m of Object.values(modules)) {
-		m().then((svg) => {
-			const img = document.createElement('img');
-			img.width = 100;
+  for (const m of Object.values(modules)) {
+    m().then((svg) => {
+      const img = document.createElement("img");
+      img.width = 100;
 
-			img.src = svg.default;
-			content.appendChild(img);
-		});
-	}
+      img.src = svg.default;
+      content.appendChild(img);
+    });
+  }
 }
 ```
 
@@ -300,7 +311,7 @@ In your application, you can access these variables through `import.meta.env.VAR
 
 Since environment variables are strings, you may want to declare their types if you’re using TypeScript. Create a `env.d.ts` file for type declarations:
 
-```javascript 
+```javascript
 interface ImportMetaEnv {
 	VITE_API_URL: string;
 	// define other variables here
@@ -310,54 +321,54 @@ interface ImportMetaEnv {
 some security concerns:
 
 - `.env.*.local` files are local-only and should not be checked into version control.
-- No sensitive data should be prefixed with VITE_ as it will be exposed to the client.
+- No sensitive data should be prefixed with VITE\_ as it will be exposed to the client.
 
 ### Create a component library
 
 We first give Vite an entry point for our library. For example, `src/components/index.ts`, in which we have two components:
 
-```typescript 
-export * from './button';
-export * from './input';
+```typescript
+export * from "./button";
+export * from "./input";
 ```
 
 We then update `vite.config.js` to set up library generation:
 
-```javascript 
-import { resolve } from 'node:path';
-import { defineConfig } from 'vite';
-// install by npm install -D 
-// or bun install -d  
-// the two plugins below are for 
+```javascript
+import { resolve } from "node:path";
+import { defineConfig } from "vite";
+// install by npm install -D
+// or bun install -d
+// the two plugins below are for
 // generate index.d.ts in dist folder
 // and resolve import css issues in ts
-import dts from 'vite-plugin-dts';
-import { libInjectCss } from 'vite-plugin-lib-inject-css';
+import dts from "vite-plugin-dts";
+import { libInjectCss } from "vite-plugin-lib-inject-css";
 
 // find current root directory path
-const __dirname = new URL('.', import.meta.url).pathname;
+const __dirname = new URL(".", import.meta.url).pathname;
 
 export default defineConfig({
-  plugins: [libInjectCss(),dts({include: ['src/components']})],
+  plugins: [libInjectCss(), dts({ include: ["src/components"] })],
   build: {
     // not include publich folder
     copyPublicDir: false,
     // for injecting css
     cssCodeSplit: true,
     lib: {
-      entry: resolve(__dirname, 'src/components/index.ts'),
-      name: 'libraryName',
+      entry: resolve(__dirname, "src/components/index.ts"),
+      name: "libraryName",
       // will crete libname.js and libname.umd.cjs
-      fileName: 'libname',
-      formats: ['es', 'umd']
-	},
-  }
+      fileName: "libname",
+      formats: ["es", "umd"],
+    },
+  },
 });
 ```
 
 You can add your library to your `package.json` like the following:
 
-```json 
+```json
 {
   "main": "./dist/libname.umd.cjs",
   "module": "./dist/libname.js",
@@ -367,7 +378,7 @@ You can add your library to your `package.json` like the following:
       "import": "./dist/libname.js",
       "require": "./dist/libname.umd.cjs",
       "types": "./dist/index.d.ts"
-	}
+    }
   }
 }
 ```
@@ -405,139 +416,336 @@ You can add your library to your `package.json` like the following:
 
 - extra tool outside of your codebase might be required to run the tests
 
-## Example: unit test
+## Unit test with Vitest
 
-Suppose you have the following code:
+[Vitest](https://vitest.dev/), due to its compatibility with Vite, is commonly used for unit tests. This setion, we give some simple examples of using `it`, `test`, and `expect` from Vitest.
 
-```javascript
-// in index.ts
-export const useRepository = routeLoader$(async ({ params, env }) => {
-  const user = params.user;
-  const repo = params.repo;
+To start with Vitest, you need to have a `vite.config.ts`(see [vite intro](#brief-intro-to-vite)) a `vitest.config.ts`.
 
-  const headers: HeadersInit = {
-    "User-Agent": "Qwik Workshop",
-    "X-GitHub-Api-Version": "2022-11-28",
+### Common commands with Vitest
+
+Assume you're using `bun`(`bun run`==`npx`).
+
+- `bun run vitest`: run all your tests and then watch for changes
+- `bun run vitest --ui`: above + open vitest UI
+- `bun run vitest --dom`: mock browser APIs using jsdom
+- `bun run vitest --browser`: run your tests in browser, require `@vitest/browser`
+
+### `it` and `test`
+
+`it` and `test` are synonyms. Below is a simple test on the function `add`:
+
+```typescript
+import { expect, it } from "vitest";
+
+const add = (a: number, b: number) => a + b;
+
+it("should work as expected", () => {
+  expect(add(2, 4)).toBe(6);
+});
+```
+
+The test above passes because 2+4 is indeed 6. However, things get more complicated if we are testing asynchronous code. For example, the test below also passes, even though it should not:
+
+```typescript
+it('works with "test" as well', () => {
+  setTimeout(() => {
+    expect("This should fail.").toBe("Totally not the same.");
+  }, 1000);
+});
+```
+
+You can workaround this by making sure `expect` command is called,
+
+```typescript
+it('works with "test" as well', () => {
+  expect.hasAssertions();
+  setTimeout(() => {
+    expect("This should fail.").toBe("Totally not the same.");
+  }, 1000);
+});
+```
+
+### Equality
+
+There is many types of equalities in `vitest`:
+
+- `toBe`: strict equality
+- `toEqual`: asserts if actual value is equal to received one or has the same structure
+  > ` expect([1, [2, 3]]).toEqual([1, [2, 3]]);`
+- `toBeCloseTo`: use this to compare floating-point numbers
+- `toBeInstanceOf`: check if a variable is an instance of certain class
+  > `const s=new Stock(); expect(stocks).toBeInstanceOf(Stocks);`
+- `toBeUndefined`: asserts that the value is `undefined`
+- `toBeTruthy`: asserts that the value is true when converted to boolean
+- `toCOntain`: asserts if the actual value is in an array.
+
+### Throw Error?
+
+You can use `toThrow` or `toThrowError` to check if a function throws error:
+
+```typescript
+test("will throw if you provide an empty string", () => {
+  const fn = () => {
+    new Person("");
+    throw new Error("empty string");
   };
-  const token = env.get("PRIVATE_GITHUB_ACCESS_TOKEN");
-  if (token) {
-    headers["Authorization"] =
-      "Bearer " + env.get("PRIVATE_GITHUB_ACCESS_TOKEN");
-  }
 
-  const response = await fetch(`https://api.github.com/repos/${user}/${repo}`, {
-    headers,
+  expect.hasAssertions();
+  expect(() => fn()).toThrowError();
+  // Verify that function above throws.
+  expect(() => fn()).toThrowError("empty string");
+  // verify the error msg is correct
+});
+```
+
+### Skip tests
+
+Sometimes, we don't want all of our tests to run.
+
+- `it.skip`: Skip this test for now.
+- `it.only`: Only run this and any other test that uses .only.
+- `it.todo`: Note to self—I still need to write this test.
+- `it.fails`: Yea, I know this one fails. Don't blow up the rest of the test run, please.
+
+### Compare tests btw commits: `vitest --changed`
+
+Runs tests related to files that changed. Out of the box, this will be against any uncommitted files. But, you can also do cool stuff like `--changed HEAD~1` or give it a branch name to compare to or a particular commit.
+
+### Test suites: `describe`
+
+You can group a set of tests into a suite using `describe`. If you don't use `describe`, all of the tests in a given file as grouped in a suite automatically.
+
+```typescript
+import { describe, it, expect } from "vitest";
+import { add, subtract } from "./math";
+
+// run all the tests in this suite concurrently
+describe.concurrent("add", () => {
+  it("should add two numbers correctly", () => {
+    expect(add(2, 2)).toBe(4);
   });
-  const repository = (await response.json());
-  return repository;
+
+  it("should not add two numbers incorrectly", () => {
+    expect(add(2, 2)).not.toBe(5);
+  });
+});
+
+// we skip the following suite
+describe.skip("subtract", () => {
+  it("should subtract the subtrahend from the minuend", () => {
+    expect(subtract(4, 2)).toBe(2);
+  });
+
+  it("should not subtract two numbers incorrectly", () => {
+    expect(subtract(4, 2)).not.toBe(1);
+  });
 });
 ```
 
-We can test the github-related part by scooping it out to make another isolated function
+### Test Asynchronous code
 
-```javascript
-// in github-api.ts
-class GithubApi {
-  constructor(private token: string | undefined) {}
+**Method 1: use `async`/`await`**
 
-  async getRepository(user: string, repo: string) {
-    const headers: HeadersInit = {
-      "User-Agent": "Qwik Workshop",
-      "X-GitHub-Api-Version": "2022-11-28",
-    };
-    if (this.token) {
-      headers["Authorization"] = "Bearer " + this.token;
-    }
+Consider the following:
 
-    // fetch function is dependent on github.com
-    // to make tests self-contained,
-    // we need to create a mock fetch function that we can control
-    const response = await fetch(
-      `https://api.github.com/repos/${user}/${repo}`,
-      {
-        headers,
-      }
-    );
-    const repository = (await response.json()) as Response;
-    return repository;
+```typescript
+const addAsync = (a: number, b: number) => Promise.resolve(a + b);
+
+test("passes if use an `async/await`", async () => {
+  const result = await addAsync(2, 3);
+  expect(result).toBe(5);
+});
+```
+
+**Method 2: use `expect.resolve/rejects`**
+
+```typescript
+it("passes if we expect it to resolve", () => {
+  const result = addAsync(2, 3);
+  expect(result).resolves.toBe(5);
+});
+
+it("passes if we expect it to reject to particular value", () => {
+  const result = onlyEvenNumbers(5);
+  expect(result).rejects.toBe(5);
+});
+```
+
+### Asymmetric matcher
+
+Asymmetric matchers allow you to **ONLY** focus on the things you care about. Consider the following type and function:
+
+```typescript
+import { v4 as id } from "uuid";
+import { expect, it } from "vitest";
+
+type ComputerScientist = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  isCool?: boolean;
+};
+
+const createComputerScientist = (
+  firstName: string,
+  lastName: string,
+): ComputerScientist => ({ id: "cs-" + id(), firstName, lastName });
+
+const addToCoolKidsClub = (p: ComputerScientist, club: unknown[]) => {
+  club.push({ ...p, isCool: true });
+};
+```
+
+Now, if we add multiple computer scientists to an array caleed `people`,
+
+```typescript
+addToCoolKidsClub(createComputerScientist("Grace", "Hopper"), people);
+addToCoolKidsClub(createComputerScientist("Ada", "Lovelace"), people);
+addToCoolKidsClub(createComputerScientist("Annie", "Easley"), people);
+addToCoolKidsClub(createComputerScientist("Dorothy", "Vaughn"), people);
+```
+
+Let's say we just cared if they're cool and they they have a first and last name that are strings, we can use Vitest to do the following:
+
+```typescript
+for (const person of people) {
+  expect(person).toEqual({
+    id: expect.stringMatching(/^cs-/),
+    firstName: expect.any(String),
+    lastName: expect.any(String),
+    isCool: true,
+  });
+}
+```
+
+Alternatively, if we're just looking for one property, we can do the following:
+
+```typescript
+for (const person of people) {
+  expect(person).toEqual(
+    expect.objectContaining({
+      isCool: expect.any(Boolean),
+    }),
+  );
+}
+```
+
+### Parameterizing tests: `it.each` or `describe.each`
+
+describe.each and it.each (or, test.each) allow us to use an array or table to automatically generate tests for ourselves.
+
+```typescript
+export class Polygon {
+  sides: number;
+  length: number;
+
+  constructor(sides: number, length: number) {
+    if (sides < 3) throw new Error("Polygons must have three or more sides.");
+    this.sides = sides;
+    this.length = length;
+  }
+
+  get type(): PolygonType | undefined {
+    if (this.sides === 3) return "triangle";
+    if (this.sides === 4) return "quadrilateral";
+    if (this.sides === 5) return "pentagon";
+    if (this.sides === 6) return "hexagon";
+    if (this.sides === 7) return "heptagon";
+    if (this.sides === 8) return "octagon";
+    if (this.sides === 9) return "nonagon";
+    if (this.sides === 10) return "decagon";
   }
 }
 ```
 
-To make the original code cleaner like the following:
+And a test for `get type()` could simply be:
 
-```javascript
-// in index.ts
-import { GithubApi } from "./github-api";
-export const useRepository = routeLoader$(async ({ params, env }) => {
-  const user = params.user;
-  const repo = params.repo;
-  const token = env.get("PRIVATE_GITHUB_ACCESS_TOKEN");
-  const api = new GithubApi(token);
-  return await api.getRepository(user, repo);
+```typescript
+it.each([
+  [3, 'triangle'],
+  [4, 'quadrilateral'],
+  [5, 'pentagon'],
+  [6, 'hexagon'],
+  [7, 'heptagon'],
+  [8, 'octagon'],
+  [9, 'nonagon'],
+  [10, 'decagon'],
+])('a polygon with %i sides should be considered a %s', (sides, type) => {
+  const polygon = new Polygon(sides, 10);
+  expect(polygon.type).toBe(type);
+});
 });
 ```
 
-We can use [vitest](https://vitest.dev/) to prepare tests for the async function "`getRepostory`" in `GithubApi` class:
+### Concurrent tests
 
-```javascript
-// in github-api.spec.ts
-// the file must be named as xxx.spec.xx
-import { describe, it, vi, beforeEach } from "vitest";
-import {GithubApi} from "./github-api";
+In order to parallelize tests, you have to use test context. `it` and `test` take a function as a second argument, which receives the test context as a argument. The text context has two main properties:
 
-// declare fetch function as a mock function
-global.fetch = vi.fn();
-// create a helper function that returns a similar response structure by real fetch
-function createFetchResponse(data) {
-  return { json: () => new Promise((resolve) => resolve(data)) }
+- `meta`: some metadata about the test itself
+- `expect`: a copy of the Expect API bound to the current test
+
+They can be used as the following:
+
+```typescript
+it("should work", (ctx) => {
+  expect(ctx.meta.name).toBe("should work");
+});
+
+it("should really work", ({ meta }) => {
+  expect(meta.name).toBe("should really work");
+});
+
+it("should have version of `expect` bound to the current test", (ctx) => {
+  ctx.expect(ctx.expect).not.toBe(expect);
+});
+```
+
+You can even extend the context by defining extra `interface`:
+
+```typescript 
+interface LocalTestContext {
+  foo: string;
 }
 
-describe("github-api", () => {
-  describe("getRepository", () => {
-    // the fetch method will have call history after each test item,
-    // we need to reset that
-    beforeEach(() => {
-      global.fetch.mockReset()
-    })
-    // each test item starts with "it"
-    it.("should return repository information",async ()=>{
-      // mock response for the fetch in "getRepository"
-      const mockResponse = [{success:true}];
-      // mock token for initializing GithubApi class
-      const mockToken = "token";
-      // mock parameters for calling "getRepository"
-      const mockUser = "usr";
-      const mockRepo = "repo";
+beforeEach<LocalTestContext>(async (context) => {
+  // typeof context is 'TestContext & LocalTestContext'
+  context.foo = 'bar';
 
-      // the goal is to assert that
-      // "getRepository" calls the fetch method with the correct headers
-      // and returns the correct data
+  it<LocalTestContext>('should work', ({ foo }) => {
+    // typeof foo is 'string'
+    console.log(foo); // 'bar'
+  });
+});
+```
 
-      // what a successful mock call would return?
-      fetch.mockResolvedValue(createFetchResponse(mockResponse))
-      // create the class instance
-      const api = new GithubApi(mockToken);
-      const res = await api.getRepository(mockUser, mockRepo)
+To run tests in a suite in parallel, you have to follow the two rules below:
 
-      // first check if the fetch is called with correct header in "getRepository"
-      expect(fetchMock).toHaveBeenCalledWith(
-        `https://api.github.com/repos/${mockUser}/${mockRepo}`,
-        {
-          method:"GET" // could be "POST/DELETE/PUT"
-          headers: {
-            "User-Agent": "Qwik Workshop",
-            "X-GitHub-Api-Version": "2022-11-28",
-            Authorization: `Bearer ${mockToken}`,
-          },
-        }
-      );
+1. You must use the verison expect bound to the test via the context argument passed to each test function (e.g. `context.expect`).
+2. You must annotate either the individual tests that you want to run concurrently or the entire suite.
 
-      // then we check if the returned result matches mockResponse
-      expect(res).toStrictEqual(mockResponse)
+For example, the tests below will run in parallel: 
 
-    // placeholder for future test implementation
-    it.todo("should timeout after x seconds with time out response");
+```typescript 
+describe.concurrent('sleep', () => {
+  it('should sleep for 500ms', async ({ expect }) => {
+    await sleep(500);
+    expect(true).toBe(true);
+  });
+
+  it('should sleep for 750ms', async ({ expect }) => {
+    await sleep(750);
+    expect(true).toBe(true);
+  });
+
+  it('should sleep for 1000ms', async ({ expect }) => {
+    await sleep(1000);
+    expect(true).toBe(true);
+  });
+
+  it('should sleep for 1500ms', async ({ expect }) => {
+    await sleep(1500);
+    expect(true).toBe(true);
   });
 });
 ```
